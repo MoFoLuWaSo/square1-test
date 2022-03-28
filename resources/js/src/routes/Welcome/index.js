@@ -23,7 +23,7 @@ const Welcome = () => {
     const [mount, isMount] = useState(true);
     const [loading, isLoading] = useState(false);
     const [blogPosts, setBlogPosts] = useState([]);
-    const [pagination, setPagination] = useState({current: 1, pageSize: 30, from: 1});
+    const [pagination, setPagination] = useState({current: 1, pageSize: 20, from: 1});
     const [openSignIn, isSignInOpen] = useState(false);
     const [openRegister, isRegisterOpen] = useState(false);
     const [carouselIndex, setCarouselIndex] = useState(0);
@@ -50,12 +50,12 @@ const Welcome = () => {
     const getBlogPosts = (paging = pagination) => {
         isLoading(true);
         fetchRecords(GET_PUBLIC_POSTS + '?page=' + paging.current + '&per_page' + paging.pageSize + '&sort_by=publication_date&direction=desc').then(res => {
-            // setPagination({
-            //     current: res.data.paginate.current_page,
-            //     pageSize: res.data.paginate.per_page,
-            //     total: res.data.paginate.total,
-            //     from: res.data.paginate.from,
-            // });
+            setPagination({
+                current: res.paginate.current_page,
+                pageSize: res.paginate.per_page,
+                total: res.paginate.total,
+                from: res.paginate.from,
+            });
             setBlogPosts(res.data);
             isLoading(false);
         }).catch(err => {
@@ -266,11 +266,14 @@ const Welcome = () => {
                         </div>)}
                 </Droppable>
             </DragDropContext>
+
+            <div className="bg-white p-5 text-center">
             <Pagination className="pb-2" size="small"
                         defaultCurrent={pagination.current}
                         total={pagination.total}
                         onChange={onPageChange}
                         pageSize={pagination.pageSize}/>
+            </div>
         </div>
 
     );
