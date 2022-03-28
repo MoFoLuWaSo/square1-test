@@ -1,0 +1,18 @@
+@import url('https://fonts.googleapis.com/css2?family=Signika:wght@300;400;500&display=swap');
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*.text-white {*/
+/*    color: white !important;*/
+/*}*/
+
+/*.bg-white {*/
+/*    background-color: white !important;*/
+/*}*/
+.webblog {
+    background-color: #150C21;
+}
+
