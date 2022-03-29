@@ -3,13 +3,20 @@
 namespace App\Http\Controllers\Guest;
 
 use App\Http\Controllers\Controller;
+
+
 use App\Models\BlogPost;
+use App\Traits\AppQuery;
 use App\Traits\AppResponser;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class PublicPostsController extends Controller
 {
     use AppResponser;
+    use AppQuery;
+
 
     /**
      * Display a listing of the resource.
@@ -22,73 +29,59 @@ class PublicPostsController extends Controller
             return redirect()->to('/');
         }
 
-        $data = BlogPost::all();
-        return $this->successResponse(['data' => $data]);
+        $data = $this->filterQuery();
+        $posts['data'] = $data->get('data');
+        $posts['paginate'] = $data->except('data');
+
+        return $this->successResponse($posts);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function getExternalPosts()
     {
-        //
+        $data = json_decode(file_get_contents("https://sq1-api-test.herokuapp.com/posts"), 1);
+        $posts = $this->filterPosts($data['data']);
+        if (!empty($posts)) {
+
+            BlogPost::insert($posts);
+        }
+
+
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
+    public function filterPosts($data)
     {
-        //
+        $posts = [];
+        $titles = [];
+        foreach ($data as $datum) {
+            $now = now();
+            if (!$this->validatesPosts($datum)) {
+                //further ensuring we have no duplicate titles in the new set of posts
+                if (!in_array($datum['title'], $titles)) {
+
+                    $datum['user_id'] = 1; //the first created user, the admin
+                    $datum['created_at'] = $now;
+                    $datum['updated_at'] = $now;
+                    $posts[] = $datum;
+                    $titles [] = $datum['title'];
+                }
+            }
+        }
+        return $posts;
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
+    /*
+     * Validate post to ensure no field is missing
+     * and also to ensure title is unique
      */
-    public function show($id)
+    public function validatePosts($post)
     {
-        //
+
+        return Validator::make($post, [
+            'title' => ['required', 'string', 'max:255', 'min:3', Rule::unique('blog_posts')],
+            'description' => ['required', 'string'],
+            'publication_date' => ['required', 'date']
+        ])->fails();
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
 }

@@ -1,25 +1,79 @@
 import {Form, Input, Modal, Spin} from "antd";
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import Helpers from "../../util/Helpers";
-import {userSignIn} from "../../appRedux/actions";
-import {LOGIN_PAGE} from "../../constants/ServerUrl";
+
+import {LOGIN_PAGE, REGISTER} from "../../constants/ServerUrl";
 import ErrorMessage from "../ErrorMessage";
+import {useDispatch, useSelector} from "react-redux";
+import axios from "axios";
+import {useHistory} from "react-router-dom";
+import {getUser} from "../../appRedux/actions";
 
 const SignInModal = (props) => {
-    const {open, isOpen} = props;
+    const dispatch = useDispatch();
+    const {authUser} = useSelector(({auth}) => auth);
+    const history = useHistory();
+    const {open, isOpen, isRegisterOpen} = props;
     const [form] = Form.useForm();
     const [error, setError] = useState(null);
     const [loading, isLoading] = useState(false);
+    const [mount, isMount] = useState(true);
+
+    useEffect(() => {
+
+        let timeOutId = 0;
+        if (mount) {
+
+            timeOutId = setTimeout(() => {
+                mountedRequests();
+            }, 1200);
+        }
+        return () => {
+
+            clearTimeout(timeOutId);
+            isMount(false);
+        }
+    }, []);
+
+    const mountedRequests = () => {
+
+
+        if (authUser) {
+            if (!authUser.email_verified_at) {
+                isRegisterOpen(true);
+                isOpen(false);
+            }
+        }
+    }
 
     const handleLogin = (data) => {
+        if (loading) {
+            return;
+        }
+        setError(null);
         form.validateFields().then(values => {
+            isLoading(true);
             let formData = new FormData();
             formData = Helpers.objectFormBuilder(formData, values);
 
-            userSignIn(LOGIN_PAGE, formData).then(res => {
+            axios.post(LOGIN_PAGE, formData).then(res => {
+                let result = res.data;
+                if (result.success === false) {
+                    setError(result.error);
+                } else {
 
+                    if (result.success || !result.two_factor) {
+                        dispatch(getUser());
+                        history.push('/home');
+                    } else {
+                        setError(result.error);
+
+                    }
+                }
+                isLoading(false);
             }).catch(err => {
                 console.log(err);
+                isLoading(false);
             });
         }).catch(err => {
             console.log(err);
@@ -27,8 +81,9 @@ const SignInModal = (props) => {
     }
     return (
         <Modal
-            width={640}
+            width={440}
             visible={open}
+            title="Login"
             onCancel={() => {
                 setError(null);
                 form.resetFields();
@@ -38,8 +93,12 @@ const SignInModal = (props) => {
             cancelText="Cancel"
             forceRender={true}
             onOk={handleLogin}
+
         >
             <Spin spinning={loading} tip="Loading...">
+                <div className="mx-auto flex justify-center mb-5">
+                    <img className="w-16" alt="WebBlog" src="images/logo/webblog_logo.png"/>
+                </div>
                 <ErrorMessage error={error}/>
                 <Form
                     name="sign-in"

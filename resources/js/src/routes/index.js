@@ -7,8 +7,9 @@ const App = ({match}) => (
     <div>
         <Switch>
 
-            <Route path={`${match.url}`} component={asyncComponent(() => import('./Welcome'))}/>
-            <Route path={`${match.url}/home`} component={asyncComponent(() => import('./Account'))}/>
+            <Route path={`${match.url}home`} component={asyncComponent(() => import('./Account'))}/>
+            <Route path={`${match.url}login`} component={asyncComponent(() => import('./Welcome'))}/>
+            <Route path={`${match.url}/`} component={asyncComponent(() => import('./Welcome'))}/>
 
 
         </Switch>

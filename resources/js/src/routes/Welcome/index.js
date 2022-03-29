@@ -4,11 +4,13 @@ import {ArrowLeftOutlined, ArrowRightOutlined, EyeInvisibleOutlined, InboxOutlin
 import Helmet from "react-helmet";
 
 import {GET_PUBLIC_POSTS} from "../../constants/ServerUrl";
-import {fetchRecords} from "../../appRedux/actions";
+import axios from "axios";
 import SignInModal from "../../components/SignInModal";
 import RegisterModal from "../../components/RegisterModal";
 import Helpers from "../../util/Helpers";
 import {DragDropContext, Draggable, Droppable} from "react-beautiful-dnd";
+import {useLocation} from "react-router-dom";
+import {useSelector} from "react-redux";
 
 const reorder = (list, startIndex, endIndex) => {
     const result = Array.from(list);
@@ -19,6 +21,8 @@ const reorder = (list, startIndex, endIndex) => {
 };
 
 const Welcome = () => {
+    const location = useLocation();
+    const {authUser} = useSelector(({auth}) => auth);
     const {Meta} = Card;
     const [mount, isMount] = useState(true);
     const [loading, isLoading] = useState(false);
@@ -46,17 +50,24 @@ const Welcome = () => {
 
     const mountedRequests = () => {
         getBlogPosts();
+
+        if (location) {
+            if (location.pathname === "/login") {
+                isSignInOpen(true);
+            }
+        }
     }
     const getBlogPosts = (paging = pagination) => {
         isLoading(true);
-        fetchRecords(GET_PUBLIC_POSTS + '?page=' + paging.current + '&per_page' + paging.pageSize + '&sort_by=publication_date&direction=desc').then(res => {
+        axios.get(GET_PUBLIC_POSTS + '?page=' + paging.current + '&per_page=' + paging.pageSize + '&sort_by=publication_date&direction=desc').then(res => {
+            let result = res.data;
             setPagination({
-                current: res.paginate.current_page,
-                pageSize: res.paginate.per_page,
-                total: res.paginate.total,
-                from: res.paginate.from,
+                current: result.paginate.current_page,
+                pageSize: result.paginate.per_page,
+                total: result.paginate.total,
+                from: result.paginate.from,
             });
-            setBlogPosts(res.data);
+            setBlogPosts(result.data);
             isLoading(false);
         }).catch(err => {
             console.log(err);
@@ -97,7 +108,7 @@ const Welcome = () => {
             </Helmet>
             <header>
                 <div className=" flex items-center text-white mb-20">
-                    <img src="images/logo/webblog_logo.png" width="70"/>
+                    <a href="/home"> <img src="images/logo/webblog_logo.png" width="70"/></a>
                     <div className="text-xl text-white ml-2 "><span className="font-semibold text-white">web</span>blog
                     </div>
                 </div>
@@ -228,7 +239,7 @@ const Welcome = () => {
 
             </header>
 
-            <SignInModal open={openSignIn} isOpen={isSignInOpen}/>
+            <SignInModal open={openSignIn} isOpen={isSignInOpen} isRegisterOpen={isRegisterOpen}/>
             <RegisterModal open={openRegister} isOpen={isRegisterOpen}/>
 
 
@@ -251,7 +262,7 @@ const Welcome = () => {
                                                         <h1 className="font-bold text-2xl">{post.title}</h1>
                                                         <p className="text-baseline">{post.description} </p>
                                                         <button
-                                                            className="ml-3 my-2 h-10 text-blue-500 rounded-full px-8 shadow-lg">Author: {post.id}
+                                                            className="ml-1 my-1 h-5 text-blue-500 rounded-full px-5 shadow-lg">Author: {post.user.name}
                                                         </button>
 
                                                     </div>
@@ -267,13 +278,16 @@ const Welcome = () => {
                 </Droppable>
             </DragDropContext>
 
-            <div className="bg-white p-5 text-center">
-            <Pagination className="pb-2" size="small"
-                        defaultCurrent={pagination.current}
-                        total={pagination.total}
-                        onChange={onPageChange}
-                        pageSize={pagination.pageSize}/>
-            </div>
+            {blogPosts.length > 0 && (
+
+                <div className="bg-white p-5 text-center">
+                    <Pagination className="pb-2" size="small"
+                                defaultCurrent={pagination.current}
+                                total={pagination.total}
+                                onChange={onPageChange}
+                                pageSize={pagination.pageSize}/>
+                </div>
+            )}
         </div>
 
     );

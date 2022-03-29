@@ -6,8 +6,8 @@ import {
     SIGNOUT_USER_SUCCESS,
     USER_DATA
 } from "../../constants/ActionTypes";
-import {fetchRecords} from "./Common";
-import {USER} from "../../constants/ServerUrl";
+
+import {MAIN_MENU, USER} from "../../constants/ServerUrl";
 import axios from 'axios';
 
 
@@ -23,10 +23,11 @@ export const getUser = (location = "/") => {
     return (dispatch) => {
         dispatch({type: FETCH_START});
 
-        fetchRecords(USER).then(res => {
-            if (res.success) {
+        axios.get(MAIN_MENU).then(res => {
+           let result = res.data;
+            if (result.success) {
                 dispatch({type: FETCH_SUCCESS});
-                dispatch({type: USER_DATA, payload: res.user});
+                dispatch({type: USER_DATA, payload: result.user});
             } else {
                 dispatch({type: FETCH_ERROR, payload: 'Problem verifying your identity'});
                 // window.location.reload();
@@ -67,14 +68,3 @@ export const userSignOut = () => {
 };
 
 
-export const userSignIn = (url, data) => {
-
-    return new Promise((resolve, reject) => {
-        axios.post(url, data).then(({res}) => {
-            resolve(res);
-        }).catch(err => {
-            reject(err);
-        });
-    });
-
-};

@@ -145,6 +145,9 @@ return [
         'attribute-name' => [
             'rule-name' => 'custom-message',
         ],
+        'title' => [
+            'unique' => 'A post with this title already exist'
+        ]
     ],
 
     /*

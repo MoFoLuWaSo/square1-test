@@ -11,6 +11,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
+use Swift_TransportException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -99,6 +100,10 @@ class Handler extends ExceptionHandler
         }
 
         if ($exception instanceof AuthorizationException) {
+            return $this->errorResponse($exception->getMessage(), 403);
+        }
+
+        if ($exception instanceof Swift_TransportException) {
             return $this->errorResponse($exception->getMessage(), 403);
         }
 

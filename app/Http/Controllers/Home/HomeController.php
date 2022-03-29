@@ -19,11 +19,14 @@ class HomeController extends Controller
 
     public function getUser()
     {
-        if (!request()->ajax()) {
+        $user = Auth::user();
+        if (!request()->ajax() && !$user) {
             return redirect()->to('/');
         }
+        if (!request()->ajax()) {
+            return view('welcome');
+        }
 
-        $user = Auth::user();
         $success = true;
         if (empty($user)) {
             $success = false;
