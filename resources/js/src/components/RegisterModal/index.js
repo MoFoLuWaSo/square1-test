@@ -259,6 +259,13 @@ const RegisterModal = (props) => {
                                 dispatch(userSignOut());
                             }}>Sign out</a>
                         </div>
+                        <p>This is a test no email has actually been sent, hit the home button below to login </p>
+                        <div className="pt-3">
+
+                            <button className="bg-blue-500 p-2" onClick={() => {
+                                history.push('/home');
+                            }}>Home</button>
+                        </div>
                     </div>
                 </div>
             </div>

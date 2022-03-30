@@ -389,6 +389,7 @@
                                 "sudo chmod 777 \/etc\/httpd\/conf.d\/welcome.conf ",
                                 "sudo mv welcome.conf \/etc\/httpd\/conf.d ",
                                 "sudo systemctl restart httpd.service ",
+                                "sudo su ",
                                 "crontab -l > mycron ",
                                 "echo \"* * * * * cd \/var\/www\/html\/square1-test && php artisan schedule:run >> \/dev\/null 2>&1\" >> mycron ",
                                 "crontab mycron ",

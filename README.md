@@ -84,3 +84,13 @@ Deployment
     
   ## Alternatively
   Upload the template in cloudFormation directory into your cloud formation service on aws to quickly have the services up.
+Check  the Cloud formation stack output to see the Load balancer  dnsname, use this to access the page.
+ 
+
+After successful deployment, if you see an apache page, give it sometime and then refresh again to see the WebBlog page
+
+There is a feed that is setup to retrieve posts every 10minutes, if it doesn't get triggered
+you can use this endpoint `/api/feeds` to test it.
+
+A solution for that might be to implement a lambda function that triggered the api every 10 minutes based on Cloud Watch Scheduled Event. 
+
