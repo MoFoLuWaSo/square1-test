@@ -2,9 +2,11 @@ name: Test-WebBlog
 
 on:
   push:
-    branches: [ master ]
+    branches: [ dev ]
   pull_request:
     branches: [ master ]
+    types:
+      - closed
 
 jobs:
   webblog-tests:
