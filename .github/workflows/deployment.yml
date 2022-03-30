@@ -30,48 +30,48 @@ on:
         default: 'https://github.com/MoFoLuWaSo/square1-test.git'
         required: true
 
-jobs:
-  deploy-webblog:
-    name: Deploy Web Blog stack to AWS
-    runs-on: ubuntu-latest
-    outputs:
-      env-name: ${{ steps.env-name.outputs.environment }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  jobs:
+    deploy-webblog:
+      name: Deploy Web Blog stack to AWS
+      runs-on: ubuntu-latest
+      outputs:
+        env-name: ${{ steps.env-name.outputs.environment }}
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v2
 
-      - name: Configure AWS credentials
-        id: creds
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ github.event.inputs.region}}
-          
-      - name: Configure environment name
-          id: env-name
-          env:
-            REPO: ${{ github.repository }}
-          run: |
-            ENVIRONMENT=`echo $REPO | tr "/" "-"`
-            echo "Environment name: $ENVIRONMENT"
-            echo "::set-output name=environment::$ENVIRONMENT"
+        - name: Configure AWS credentials
+          id: creds
+          uses: aws-actions/configure-aws-credentials@v1
+          with:
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: ${{ github.event.inputs.region}}
 
-      - name: Deploy Cloud Formation Stack
-        uses: aws-actions/aws-cloudformation-github-deploy@v1.0.3
-        with:
-          name: WebBlogStack
-          template: cloudFormation/WebBlogTemplate.template
-          no-fail-on-empty-changeset: "1"
-          parameter-overrides: >-
-            KeyPair=${{ github.event.inputs.keypair }},
-            ImageId=${{ github.event.inputs.ImageId }},
-            VpcCIDR=${{ github.event.inputs.VpcCIDR }},
-            PublicSubnet1CIDR=${{ github.event.inputs.PublicSubnet1CIDR }},
-            PublicSubnet2CIDR=${{ github.event.inputs.PublicSubnet2CIDR }},
-            DBName=${{ secrets.DB_DATABASE }},
-            DBUserName=${{ secrets.DB_USERNAME }},
-            DBPassword=${{ secrets.DB_PASSWORD }},
-            GitHubUrl=${{ github.event.inputs.GitHubUrl }}
+        - name: Configure environment name
+            id: env-name
+            env:
+              REPO: ${{ github.repository }}
+            run: |
+              ENVIRONMENT=`echo $REPO | tr "/" "-"`
+              echo "Environment name: $ENVIRONMENT"
+              echo "::set-output name=environment::$ENVIRONMENT"
+
+        - name: Deploy Cloud Formation Stack
+          uses: aws-actions/aws-cloudformation-github-deploy@v1.0.3
+          with:
+            name: WebBlogStack
+            template: cloudFormation/WebBlogTemplate.template
+            no-fail-on-empty-changeset: "1"
+            parameter-overrides: >-
+              KeyPair=${{ github.event.inputs.keypair }},
+              ImageId=${{ github.event.inputs.ImageId }},
+              VpcCIDR=${{ github.event.inputs.VpcCIDR }},
+              PublicSubnet1CIDR=${{ github.event.inputs.PublicSubnet1CIDR }},
+              PublicSubnet2CIDR=${{ github.event.inputs.PublicSubnet2CIDR }},
+              DBName=${{ secrets.DB_DATABASE }},
+              DBUserName=${{ secrets.DB_USERNAME }},
+              DBPassword=${{ secrets.DB_PASSWORD }},
+              GitHubUrl=${{ github.event.inputs.GitHubUrl }}
 
 
