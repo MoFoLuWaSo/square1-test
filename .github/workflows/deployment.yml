@@ -7,28 +7,28 @@ on:
         description: 'AWS Region'
         required: true
         default: 'eu-central-1'
-        keypair:
-          description: 'SSH Key Pair'
-          required: true
-        ImageId:
-          description: 'Amazon Linux Image Id'
-          required: true
-        VpcCIDR:
-          description: 'VPC Cidr'
-          default: '192.168.0.0/22'
-          required: true
-        PublicSubnet1CIDR:
-          description: 'Subnet 1 Cidr'
-          default: '192.168.0.0/24'
-          required: true
-        PublicSubnet2CIDR:
-          description: 'Subnet 2 Cidr'
-          default: '192.168.2.0/23'
-          required: true
-        GitHubUrl:
-          description: 'GitHub Url'
-          default: 'https://github.com/MoFoLuWaSo/square1-test.git'
-          required: true
+      keypair:
+        description: 'SSH Key Pair'
+        required: true
+      ImageId:
+        description: 'Amazon Linux Image Id'
+        required: true
+      VpcCIDR:
+        description: 'VPC Cidr'
+        default: '192.168.0.0/22'
+        required: true
+      PublicSubnet1CIDR:
+        description: 'Subnet 1 Cidr'
+        default: '192.168.0.0/24'
+        required: true
+      PublicSubnet2CIDR:
+        description: 'Subnet 2 Cidr'
+        default: '192.168.2.0/23'
+        required: true
+      GitHubUrl:
+        description: 'GitHub Url'
+        default: 'https://github.com/MoFoLuWaSo/square1-test.git'
+        required: true
 
 jobs:
   deploy-webblog:
