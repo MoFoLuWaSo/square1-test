@@ -61,9 +61,9 @@ jobs:
             VpcCIDR=${{ github.event.inputs.VpcCIDR }},
             PublicSubnet1CIDR=${{ github.event.inputs.PublicSubnet1CIDR }},
             PublicSubnet2CIDR=${{ github.event.inputs.PublicSubnet2CIDR }},
-            DBName=${{ secrets.AWS_SECRET_ACCESS_KEY }},
-            DBUserName=${{ secrets.AWS_SECRET_ACCESS_KEY }},
-            DBPassword=${{ secrets.AWS_SECRET_ACCESS_KEY }},
+            DBName=${{ secrets.DB_DATABASE }},
+            DBUserName=${{ secrets.DB_USERNAME }},
+            DBPassword=${{ secrets.DB_PASSWORD }},
             GitHubUrl=${{ github.event.inputs.GitHubUrl }}
 
 
