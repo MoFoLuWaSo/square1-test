@@ -49,8 +49,7 @@ jobs:
           aws-region: ${{ github.event.inputs.region}}
 
       - name: Deploy Cloud Formation Stack
-        id: webblog-environment
-        uses: aws-actions/aws-cloudformation-github-deploy@master
+        uses: aws-actions/aws-cloudformation-github-deploy@v1.0.3
         with:
           name: WebBlogStack
           template: cloudFormation/WebBlogTemplate.template
