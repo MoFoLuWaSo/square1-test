@@ -38,7 +38,7 @@ Programming
 Deployment 
 - [AWS](https://aws.amazon.com): Cloud Formation, VPC, Subnets, EC2, RDS
 - [CI/CD Pipeline](https://github.com): Github and Github Actions
--[Cloud Sphere](https://github.com/MoFoLuWaSo/CloudSphere) this is my custom tool for easy creation of cloud formation templates, when i'm not using terraform, i make use of this tool.
+- [Cloud Sphere](https://github.com/MoFoLuWaSo/CloudSphere) this is my custom tool for easy creation of cloud formation templates, when i'm not using terraform, i make use of this tool.
 
 
  ## Project Setup 
