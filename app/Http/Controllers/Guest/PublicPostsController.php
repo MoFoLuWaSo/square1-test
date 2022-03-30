@@ -54,7 +54,7 @@ class PublicPostsController extends Controller
         $titles = [];
         foreach ($data as $datum) {
             $now = now();
-            if (!$this->validatesPosts($datum)) {
+            if (! $this->validatePosts($datum)) {
                 //further ensuring we have no duplicate titles in the new set of posts
                 if (!in_array($datum['title'], $titles)) {
 
