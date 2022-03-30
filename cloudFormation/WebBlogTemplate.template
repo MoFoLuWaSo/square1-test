@@ -1,0 +1,512 @@
+{
+    "Parameters": {
+        "KeyPair": {
+            "ConstraintDescription": "Select your Instance Key Pair",
+            "Type": "AWS::EC2::KeyPair::KeyName"
+        },
+        "ImageId": {
+            "ConstraintDescription": "Enter only Amazon Linux EC2 Image ID",
+            "Type": "AWS::EC2::Image::Id"
+        },
+        "GitHubUrl": {
+            "ConstraintDescription": "Paste Github URL for the Square 1, Web Blog Repository",
+            "Default": "https:\/\/github.com\/MoFoLuWaSo\/square1-test.git",
+            "Type": "String"
+        },
+        "VpcCIDR": {
+            "Default": "192.168.0.0\/22",
+            "Description": "Please enter the IP range (CIDR notation) for this VPC",
+            "Type": "String"
+        },
+        "PublicSubnet1CIDR": {
+            "Default": "192.168.0.0\/24",
+            "Description": "Please enter the IP range (CIDR notation) for public subnet 1",
+            "Type": "String"
+        },
+        "PublicSubnet2CIDR": {
+            "Default": "192.168.2.0\/23",
+            "Description": "Please enter the IP range (CIDR notation) for public subnet 2",
+            "Type": "String"
+        },
+        "DBName": {
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "Enter a name for web blog database. Name must be alphanumeric",
+            "Default": "webblogDB",
+            "MinLength": "4",
+            "Type": "String"
+        },
+        "DBUserName": {
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "Enter a username for your database. Name must be alphanumeric",
+            "Default": "webblogDBUser",
+            "MinLength": "4",
+            "Type": "String"
+        },
+        "DBPassword": {
+            "AllowedPattern": "[a-zA-Z][a-zA-Z0-9]*",
+            "ConstraintDescription": "Enter a password for your database. Password must be alphanumeric",
+            "Default": "webblogDBPass",
+            "MinLength": "4",
+            "NoEcho": true,
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "WebBlogVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": {
+                    "Ref": "VpcCIDR"
+                },
+                "EnableDnsSupport": true,
+                "InstanceTenancy": "default",
+                "EnableDnsHostnames": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlogVPC"
+                    }
+                ]
+            }
+        },
+        "WebBlogIgw": {
+            "Type": "AWS::EC2::InternetGateway",
+            "Properties": {
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlogIgw"
+                    }
+                ]
+            }
+        },
+        "AttachGateway": {
+            "Type": "AWS::EC2::VPCGatewayAttachment",
+            "Properties": {
+                "InternetGatewayId": {
+                    "Ref": "WebBlogIgw"
+                },
+                "VpcId": {
+                    "Ref": "WebBlogVPC"
+                }
+            }
+        },
+        "WebBlogPublicSubnet1": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "WebBlogVPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnet1CIDR"
+                },
+                "AvailabilityZone": "eu-central-1a",
+                "MapPublicIpOnLaunch": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlogPublicSubnet1a"
+                    }
+                ]
+            }
+        },
+        "WebBlogPublicSubnet2": {
+            "Type": "AWS::EC2::Subnet",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "WebBlogVPC"
+                },
+                "CidrBlock": {
+                    "Ref": "PublicSubnet2CIDR"
+                },
+                "AvailabilityZone": "eu-central-1b",
+                "MapPublicIpOnLaunch": true,
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlogPublicSubnet2b"
+                    }
+                ]
+            }
+        },
+        "WebBlogRouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Ref": "WebBlogVPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlogRouteTable"
+                    }
+                ]
+            }
+        },
+        "WebBlogPublicRoute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "WebBlogRouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0\/0",
+                "GatewayId": {
+                    "Ref": "WebBlogIgw"
+                }
+            }
+        },
+        "WebBlogSubnetRouteTableAssociation1": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "WebBlogPublicSubnet1"
+                },
+                "RouteTableId": {
+                    "Ref": "WebBlogRouteTable"
+                }
+            }
+        },
+        "WebBlogSubnetRouteTableAssociation2": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Ref": "WebBlogPublicSubnet2"
+                },
+                "RouteTableId": {
+                    "Ref": "WebBlogRouteTable"
+                }
+            }
+        },
+        "LoadBalancerSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Allow tcp on port 80",
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0\/0",
+                        "FromPort": "80",
+                        "IpProtocol": "tcp",
+                        "ToPort": "80"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlog Public Access"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "WebBlogVPC"
+                }
+            }
+        },
+        "EC2SecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Allow private tcp on port 80 and ssh on port 22",
+                "SecurityGroupIngress": [
+                    {
+                        "FromPort": "80",
+                        "IpProtocol": "tcp",
+                        "SourceSecurityGroupId": {
+                            "Fn::GetAtt": [
+                                "LoadBalancerSG",
+                                "GroupId"
+                            ]
+                        },
+                        "ToPort": "80"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0\/0",
+                        "FromPort": "22",
+                        "IpProtocol": "tcp",
+                        "ToPort": "22"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlog Private Access"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "WebBlogVPC"
+                }
+            }
+        },
+        "DBSecurityGroup": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Allow tcp on port 3306 from EC2",
+                "SecurityGroupIngress": [
+                    {
+                        "FromPort": "3306",
+                        "IpProtocol": "tcp",
+                        "SourceSecurityGroupId": {
+                            "Fn::GetAtt": [
+                                "EC2SecurityGroup",
+                                "GroupId"
+                            ]
+                        },
+                        "ToPort": "3306"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlog EC2-Database Access"
+                    }
+                ],
+                "VpcId": {
+                    "Ref": "WebBlogVPC"
+                }
+            }
+        },
+        "WebBlogSubnetGroup": {
+            "Type": "AWS::RDS::DBSubnetGroup",
+            "Properties": {
+                "DBSubnetGroupDescription": "Subnet Group for mysql",
+                "DBSubnetGroupName": "WebBlogSubnetGroup",
+                "SubnetIds": [
+                    {
+                        "Ref": "WebBlogPublicSubnet1"
+                    },
+                    {
+                        "Ref": "WebBlogPublicSubnet2"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlogSubnetGroup"
+                    }
+                ]
+            }
+        },
+        "WebBlogDatabaseInstance": {
+            "Type": "AWS::RDS::DBInstance",
+            "Properties": {
+                "DBInstanceIdentifier": "WebBlogDatabaseInstance",
+                "DBName": {
+                    "Ref": "DBName"
+                },
+                "DBInstanceClass": "db.t3.micro",
+                "AllocatedStorage": "20",
+                "Engine": "MySQL",
+                "EngineVersion": "8.0.16",
+                "MasterUsername": {
+                    "Ref": "DBUserName"
+                },
+                "MasterUserPassword": {
+                    "Ref": "DBPassword"
+                },
+                "DBSubnetGroupName": {
+                    "Ref": "WebBlogSubnetGroup"
+                },
+                "VPCSecurityGroups": [
+                    {
+                        "Fn::GetAtt": [
+                            "DBSecurityGroup",
+                            "GroupId"
+                        ]
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlogDatabaseInstance"
+                    }
+                ]
+            }
+        },
+        "WebBlogLaunchConfiguration": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Properties": {
+                "ImageId": {
+                    "Ref": "ImageId"
+                },
+                "InstanceType": "t2.micro",
+                "AssociatePublicIpAddress": true,
+                "SecurityGroups": [
+                    {
+                        "Fn::GetAtt": [
+                            "EC2SecurityGroup",
+                            "GroupId"
+                        ]
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "KeyPair"
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "\n",
+                            [
+                                "#!\/bin\/bash -xe ",
+                                "sudo yum install httpd -y ",
+                                "sudo systemctl start httpd ",
+                                "sudo systemctl enable httpd.service ",
+                                "sudo amazon-linux-extras install epel -y ",
+                                "sudo amazon-linux-extras install php7.4 -y ",
+                                "sudo yum install epel-release yum-utils -y ",
+                                "sudo yum -y update ",
+                                "sudo yum install openssl php-common php-curl php-json php-mbstring php-mysql php-xml php-zip php-gd php-pdo_pgsql --skip-broken -y ",
+                                "sudo systemctl  restart httpd.service ",
+                                "sudo yum install git -y ",
+                                "sudo yum install php-cli php-zip wget unzip -y ",
+                                "sudo curl -sS https:\/\/getcomposer.org\/installer | sudo php ",
+                                "sudo mv composer.phar \/usr\/local\/bin\/composer ",
+                                "sudo ln -s \/usr\/local\/bin\/composer \/usr\/bin\/composer ",
+                                "curl -sL https:\/\/rpm.nodesource.com\/setup_16.x | sudo bash - ",
+                                "sudo yum install nodejs -y ",
+                                "cd \/var\/www\/html ",
+                                {
+                                    "Fn::Sub": "sudo git clone ${GitHubUrl} "
+                                },
+                                "cd \/var\/www\/html\/square1-test ",
+                                "sudo chown -R $USER:$USER \/var\/www\/html\/square1-test ",
+                                "sudo chmod -R 755 \/var\/www ",
+                                "sudo composer install ",
+                                "sudo chmod -R 777 \/var\/www\/html\/square1-test\/storage ",
+                                "cp .env.example .env ",
+                                "php artisan key:gen ",
+                                {
+                                    "Fn::Sub": "php artisan env:set DB_HOST ${WebBlogDatabaseInstance.Endpoint.Address} "
+                                },
+                                {
+                                    "Fn::Sub": "php artisan env:set DB_DATABASE ${DBName} "
+                                },
+                                {
+                                    "Fn::Sub": "php artisan env:set DB_USERNAME ${DBUserName} "
+                                },
+                                {
+                                    "Fn::Sub": "php artisan env:set DB_PASSWORD ${DBPassword} "
+                                },
+                                "sudo chmod 777 \/etc\/httpd\/conf.d\/welcome.conf ",
+                                "sudo mv welcome.conf \/etc\/httpd\/conf.d ",
+                                "sudo systemctl restart httpd.service "
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "WebBlogTargets": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "Name": "WebBlogTargets",
+                "Port": "80",
+                "Protocol": "HTTP",
+                "VpcId": {
+                    "Ref": "WebBlogVPC"
+                }
+            }
+        },
+        "WebBlogAutoScalingGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "DesiredCapacity": "1",
+                "MinSize": "1",
+                "MaxSize": "3",
+                "VPCZoneIdentifier": [
+                    {
+                        "Ref": "WebBlogPublicSubnet1"
+                    },
+                    {
+                        "Ref": "WebBlogPublicSubnet2"
+                    }
+                ],
+                "LaunchConfigurationName": {
+                    "Ref": "WebBlogLaunchConfiguration"
+                },
+                "TargetGroupARNs": [
+                    {
+                        "Ref": "WebBlogTargets"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "PropagateAtLaunch": true,
+                        "Value": "WebBlogAutoScalingGroup"
+                    }
+                ]
+            }
+        },
+        "WebBlogLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Name": "WebBlogLoadBalancer",
+                "Scheme": "internet-facing",
+                "Type": "application",
+                "SecurityGroups": [
+                    {
+                        "Fn::GetAtt": [
+                            "LoadBalancerSG",
+                            "GroupId"
+                        ]
+                    }
+                ],
+                "Subnets": [
+                    {
+                        "Ref": "WebBlogPublicSubnet1"
+                    },
+                    {
+                        "Ref": "WebBlogPublicSubnet2"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "WebBlogLoadBalancer"
+                    }
+                ]
+            }
+        },
+        "WebBlogListener": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "LoadBalancerArn": {
+                    "Ref": "WebBlogLoadBalancer"
+                },
+                "Port": 80,
+                "Protocol": "HTTP",
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "ForwardConfig": {
+                            "TargetGroups": [
+                                {
+                                    "TargetGroupArn": {
+                                        "Ref": "WebBlogTargets"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "PublicDns": {
+            "Description": "Public dns of the load balancer",
+            "Value": {
+                "Fn::GetAtt": [
+                    "WebBlogLoadBalancer",
+                    "DNSName"
+                ]
+            }
+        },
+        "DatabaseEndpoint": {
+            "Description": "DB instance endpoint",
+            "Value": {
+                "Fn::GetAtt": [
+                    "WebBlogDatabaseInstance",
+                    "Endpoint.Address"
+                ]
+            }
+        }
+    }
+}
