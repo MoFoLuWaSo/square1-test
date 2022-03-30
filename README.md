@@ -84,3 +84,9 @@ Deployment
     
   ## Alternatively
   Upload the template in cloudFormation directory into your cloud formation service on aws to quickly have the services up.
+Check  the Cloud formation stack output to see the Load balancer  dnsname, use this to access the page.
+ 
+
+After successful deployment, if you see an apache page, give it sometime and then refresh again to see the WebBlog page
+
+

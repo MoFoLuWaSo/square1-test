@@ -83,7 +83,7 @@ const Account = () => {
                 getBlogPosts();
             }
         }
-        console.log("here");
+
     }
 
     const getBlogPosts = (field = sortField, order = sortOrder, paging = pagination) => {
