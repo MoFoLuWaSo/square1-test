@@ -367,10 +367,12 @@
                                 "cd \/var\/www\/html\/square1-test ",
                                 "sudo chown -R $USER:$USER \/var\/www\/html\/square1-test ",
                                 "sudo chmod -R 755 \/var\/www ",
-                                "sudo composer install ",
+                                "sudo composer install --ignore-platform-reqs ",
                                 "sudo chmod -R 777 \/var\/www\/html\/square1-test\/storage ",
                                 "cp .env.example .env ",
                                 "php artisan key:gen ",
+                                "sudo npm install ",
+                                "sudo npm run prod ",
                                 {
                                     "Fn::Sub": "php artisan env:set DB_HOST ${WebBlogDatabaseInstance.Endpoint.Address} "
                                 },
@@ -383,9 +385,14 @@
                                 {
                                     "Fn::Sub": "php artisan env:set DB_PASSWORD ${DBPassword} "
                                 },
+                                "php artisan migrate ",
                                 "sudo chmod 777 \/etc\/httpd\/conf.d\/welcome.conf ",
                                 "sudo mv welcome.conf \/etc\/httpd\/conf.d ",
-                                "sudo systemctl restart httpd.service "
+                                "sudo systemctl restart httpd.service ",
+                                "crontab -l > mycron ",
+                                "echo \"* * * * * cd \/var\/www\/html\/square1-test && php artisan schedule:run >> \/dev\/null 2>&1\" >> mycron ",
+                                "crontab mycron ",
+                                "rm mycron "
                             ]
                         ]
                     }
