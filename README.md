@@ -49,7 +49,6 @@ Deployment
  
 - Fork the repository 
 
-`git clone https://github.com/MoFoLuWaSo/square1-test.git`
 
 - Add the following credentials to the repo secrets in settings
 
